@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="320" viewBox="0 0 1200 320">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b1f3a"/>
+      <stop offset="100%" stop-color="#0e3556"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#818cf8"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="320" fill="url(#bg)"/>
+  <circle cx="1140" cy="40" r="160" fill="#38bdf8" opacity="0.06"/>
+  <circle cx="40" cy="300" r="200" fill="#818cf8" opacity="0.06"/>
+
+  <text x="60" y="86" font-family="Segoe UI, Arial, sans-serif" font-size="46" font-weight="700" fill="#ffffff">Captain RAG Voice Assistant</text>
+  <rect x="60" y="102" width="280" height="6" rx="3" fill="url(#accent)"/>
+  <text x="60" y="140" font-family="Segoe UI, Arial, sans-serif" font-size="20" fill="#b8ccdd">
+    Text in • grounded RAG answer • English → Amharic • Captain voice (TTS)
+  </text>
+
+  <!-- pipeline nodes -->
+  <g font-family="Segoe UI, Arial, sans-serif" font-size="14" fill="#0b1f3a" text-anchor="middle">
+    <rect x="48"  y="180" width="150" height="54" rx="10" fill="#38bdf8"/>
+    <text x="123" y="212" font-weight="600">1 · Retrieval</text>
+
+    <path d="M198 207 L230 207" stroke="#7fd0ff" stroke-width="3" fill="none"/>
+
+    <rect x="234" y="180" width="150" height="54" rx="10" fill="#a5b4fc"/>
+    <text x="309" y="212" font-weight="600">2 · Grounded LLM</text>
+
+    <path d="M384 207 L416 207" stroke="#7fd0ff" stroke-width="3" fill="none"/>
+
+    <rect x="420" y="180" width="150" height="54" rx="10" fill="#67e8f9"/>
+    <text x="495" y="212" font-weight="600">3 · Translate EN→AM</text>
+
+    <path d="M570 207 L602 207" stroke="#7fd0ff" stroke-width="3" fill="none"/>
+
+    <rect x="606" y="180" width="150" height="54" rx="10" fill="#f0abfc"/>
+    <text x="681" y="212" font-weight="600">4 · TTS (Captain)</text>
+
+    <path d="M756 207 L788 207" stroke="#7fd0ff" stroke-width="3" fill="none"/>
+
+    <rect x="792" y="180" width="150" height="54" rx="10" fill="#fda4af"/>
+    <text x="867" y="212" font-weight="600">5 · Audio output</text>
+  </g>
+
+  <text x="60" y="282" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#7fa3bd">
+    Node.js + TypeScript  •  PostgreSQL + pgvector  •  OpenAI (embeddings · LLM · translation · TTS)  •  Knowledge base: 10 maritime documents
+  </text>
+  <text x="60" y="308" font-family="Segoe UI, Arial, sans-serif" font-size="14" fill="#4c6f8f">
+    Sample demo project — knowledge-base content is fictional and not operational maritime guidance.
+  </text>
+</svg>

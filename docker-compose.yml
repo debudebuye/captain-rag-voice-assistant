@@ -1,0 +1,37 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: captain_rag_db
+    environment:
+      POSTGRES_USER: captain
+      POSTGRES_PASSWORD: captain
+      POSTGRES_DB: captain_rag
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U captain -d captain_rag"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: .
+    container_name: captain_rag_api
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      DATABASE_URL: postgresql://captain:captain@db:5432/captain_rag
+      NODE_ENV: production
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    volumes:
+      - audio_data:/app/audio
+
+volumes:
+  pgdata:
+  audio_data:

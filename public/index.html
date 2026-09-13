@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Captain RAG Voice Assistant</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="app-header">
+      <div class="app-header__mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 2v20M12 12l6-6M12 12l-6 6M12 12l6 6M12 12l-6-6" />
+        </svg>
+      </div>
+      <div>
+        <h1>Captain Voice Assistant</h1>
+        <p class="app-header__sub">RAG-grounded responses on the ship operations manual, translated to your language and spoken in the Captain's voice.</p>
+      </div>
+    </header>
+
+    <main>
+      <section class="card">
+        <form id="query-form" autocomplete="off">
+          <label for="query" class="form-label">Command / query</label>
+          <div class="form-actions">
+            <textarea
+              id="query"
+              name="query"
+              rows="3"
+              maxlength="1000"
+              placeholder="e.g. There is a fire in the engine room. What should I do?"
+              required
+            ></textarea>
+            <div class="form-actions__row">
+              <label class="form-label form-label--inline">
+                Output language
+                <select id="target-language" name="targetLanguage">
+                  <option value="am">Amharic (አማርኛ)</option>
+                  <option value="en">English</option>
+                  <option value="fr">French</option>
+                  <option value="es">Spanish</option>
+                  <option value="sw">Swahili</option>
+                  <option value="de">German</option>
+                </select>
+              </label>
+              <button type="submit" id="submit-btn" class="btn btn--primary">
+                <span class="btn__spinner" aria-hidden="true"></span>
+                <span class="btn__label">Ask the Captain</span>
+              </button>
+            </div>
+          </div>
+        </form>
+        <p id="char-count" class="form-hint" aria-live="polite"></p>
+      </section>
+
+      <section id="error-box" class="card card--error" hidden></section>
+
+      <section id="results" class="results" hidden>
+        <div class="card">
+          <div class="result-head">
+            <h2>Voice response</h2>
+            <span id="latency" class="badge"></span>
+          </div>
+          <audio id="audio-player" class="audio-player" controls></audio>
+          <div id="translated-response" class="translated"></div>
+          <details>
+            <summary>Grounded answer (English)</summary>
+            <p id="generated-response" class="generated"></p>
+          </details>
+        </div>
+
+        <div class="card">
+          <h2>Retrieved context</h2>
+          <p id="context-note" class="form-hint"></p>
+          <ul id="sources" class="sources"></ul>
+        </div>
+
+        <div class="card">
+          <h2>Pipeline trace</h2>
+          <table class="trace">
+            <tbody>
+              <tr><td>Embedding model</td><td id="m-embedding"></td></tr>
+              <tr><td>Generation model</td><td id="m-llm"></td></tr>
+              <tr><td>Translation model</td><td id="m-translation"></td></tr>
+              <tr><td>TTS model / voice</td><td id="m-tts"></td></tr>
+              <tr><td>Retrieval</td><td id="t-retrieval"></td></tr>
+              <tr><td>Generation</td><td id="t-generation"></td></tr>
+              <tr><td>Translation</td><td id="t-translation"></td></tr>
+              <tr><td>TTS</td><td id="t-tts"></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      Demo UI for the Captain RAG Voice Assistant. Sample knowledge base — not for operational use.
+    </footer>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

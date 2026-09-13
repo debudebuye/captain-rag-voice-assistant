@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { OpenAiTranslator } from '../../src/modules/translation/translator';
+import { GroqTranslator } from '../../src/modules/translation/translator';
 import { ExternalServiceError } from '../../src/shared/errors';
 
 function fakeClient() {
@@ -8,10 +8,10 @@ function fakeClient() {
   } as never;
 }
 
-describe('OpenAiTranslator', () => {
+describe('GroqTranslator', () => {
   it('returns the translated text from the model', async () => {
     const client = fakeClient();
-    const translator = new OpenAiTranslator(client as never);
+    const translator = new GroqTranslator(client as never);
     vi.mocked(client.chat.completions.create).mockResolvedValue({
       choices: [{ message: { content: 'እሳት ነው' } }],
     } as never);
@@ -22,7 +22,7 @@ describe('OpenAiTranslator', () => {
 
   it('throws when the translation is empty', async () => {
     const client = fakeClient();
-    const translator = new OpenAiTranslator(client as never);
+    const translator = new GroqTranslator(client as never);
     vi.mocked(client.chat.completions.create).mockResolvedValue({
       choices: [{ message: { content: '' } }],
     } as never);
@@ -34,7 +34,7 @@ describe('OpenAiTranslator', () => {
 
   it('wraps API failures in ExternalServiceError', async () => {
     const client = fakeClient();
-    const translator = new OpenAiTranslator(client as never);
+    const translator = new GroqTranslator(client as never);
     vi.mocked(client.chat.completions.create).mockRejectedValue(new Error('bad') as never);
 
     await expect(translator.translate('Text', 'am')).rejects.toBeInstanceOf(

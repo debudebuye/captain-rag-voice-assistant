@@ -49,3 +49,23 @@ describe('assistant query validation', () => {
     expect(res.body.error.code).toBe('NOT_FOUND');
   });
 });
+
+describe('web UI', () => {
+  it('serves the landing page at /', async () => {
+    const res = await request(app).get('/');
+    expect(res.status).toBe(200);
+    expect(res.headers['content-type']).toContain('text/html');
+    expect(res.text).toContain('Captain Voice Assistant');
+  });
+
+  it('serves static assets from /public', async () => {
+    const [css, js] = await Promise.all([
+      request(app).get('/style.css'),
+      request(app).get('/app.js'),
+    ]);
+    expect(css.status).toBe(200);
+    expect(css.headers['content-type']).toContain('text/css');
+    expect(js.status).toBe(200);
+    expect(js.headers['content-type']).toContain('javascript');
+  });
+});

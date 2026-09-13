@@ -11,6 +11,13 @@ curl -s http://localhost:3000/api/health | jq
 
 Expect `"status": "ok"` (or `degraded` if the DB is down — it reports honestly).
 
+## 1b. Optional: start the demo from the web UI (30 s)
+
+Open **http://localhost:3000** in a browser — this is the primary interface you'll demo.
+Type the query below (or use the placeholder rotation in the input), pick a language, and
+press **Ask the Captain**. The page renders the answer, translation, audio player, sources,
+and trace inline. The `curl` steps below exercise the same API.
+
 ## 2. Grounded answer with sources (1 min)
 
 ```bash
@@ -23,8 +30,9 @@ Observation points for the demo:
 
 - `sources` shows `fire-procedure.md` chunks with similarity scores.
 - `generatedResponse` is grounded, procedural, and under 120 words.
-- `translatedResponse` is in Amharic (Ge'ez script).
-- `metadata` shows per-stage latency and the exact models/voice.
+- `translatedResponse` is in Amharic (Ge'ez/Ethiopic script).
+- `metadata` shows per-stage latency and the exact models/voice (`@cf/baai/bge-m3`,
+  `qwen3.8-27b`, `am-ET-AmehaNeural`).
 
 ## 3. A second, different domain (30 s)
 
@@ -58,8 +66,9 @@ curl -o answer.mp3 http://localhost:3000/audio/<filename>.mp3
 start answer.mp3    # or open it in a browser
 ```
 
-Highlight that the voice is a consistent Captain voice (`onyx`) reading the **translated**
-Amharic text — translation happens before TTS.
+Highlight that the voice is a consistent Captain voice profile (`am-ET-AmehaNeural` male
+Amharic voice for the default language; each supported output language auto-selects a
+native male voice) reading the **translated** Amharic text — translation happens before TTS.
 
 ## 6. Trace explanation (1 min)
 
@@ -85,6 +94,8 @@ Explain the stages and where each number comes from.
 
 - **Why PostgreSQL + pgvector?** One database for data + vectors; HNSW index is
   production-grade; no extra infra.
+- **Why Cloudflare Workers AI for embeddings?** Free tier, multilingual `bge-m3` (100+
+  languages, 1024-dim) fits the Amharic content without a dedicated embedding host.
 - **Why chunk by paragraph?** Keeps semantic units intact; boundaries are meaningful for
   procedures.
 - **How is similarity computed?** Cosine distance in pgvector via HNSW approximate
@@ -93,7 +104,10 @@ Explain the stages and where each number comes from.
   insufficient" fallback, and source attribution in the trace.
 - **Why translate before TTS?** The TTS reads the final translated text; it also keeps
   translation testable/auditable as its own pipeline stage.
-- **Limits?** Sequential API calls = latency; OpenAI Amharic voice quality; token count
-  heuristic; local audio storage.
+- **Why edge-tts instead of voice cloning?** Free, keyless, and multilingual. It reads in a
+  fixed Microsoft neural voice per language rather than a cloned Captain voice — a known
+  tradeoff: real cloning (e.g. ElevenLabs) would be the production upgrade.
+- **Limits?** Sequential API calls = latency; edge-tts voice is a fixed neural profile, not
+  a clone; token count heuristic; local audio storage; free-tier rate limits.
 - **Scale?** Stream/parallelize stages, add reranking + hybrid retrieval, move audio to
   object storage, add evaluation harness.

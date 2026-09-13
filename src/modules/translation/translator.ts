@@ -7,8 +7,22 @@ export interface Translator {
   translate(text: string, targetLanguage: string): Promise<string>;
 }
 
+const LANGUAGE_NAMES: Record<string, string> = {
+  am: 'Amharic (አማርኛ, written in Ethiopic script)',
+  en: 'English',
+  fr: 'French',
+  es: 'Spanish',
+  sw: 'Swahili',
+  de: 'German',
+};
+
+function resolveLanguageName(code: string): string {
+  return LANGUAGE_NAMES[code] ?? code;
+}
+
 function buildTranslationPrompt(text: string, targetLanguage: string): string {
-  return `Translate the following text into ${targetLanguage}. Rules:
+  const language = resolveLanguageName(targetLanguage);
+  return `Translate the following text into ${language}. Rules:
 1. Translate the meaning faithfully, not word-by-word.
 2. Preserve names, numbers, units, and technical terms that are standard in maritime usage.
 3. Keep the same tone: concise professional shipboard communication.
@@ -18,10 +32,10 @@ TEXT:
 """${text}"""`;
 }
 
-export class OpenAiTranslator implements Translator {
+export class GroqTranslator implements Translator {
   private readonly client: OpenAI;
 
-  constructor(client = new OpenAI({ apiKey: env.OPENAI_API_KEY })) {
+  constructor(client = new OpenAI({ apiKey: env.GROQ_API_KEY, baseURL: env.GROQ_BASE_URL })) {
     this.client = client;
   }
 
@@ -41,7 +55,7 @@ export class OpenAiTranslator implements Translator {
 
       const translation = response.choices[0]?.message?.content?.trim() ?? '';
       if (!translation) {
-        throw new ExternalServiceError('openai', 'Translation produced empty output');
+        throw new ExternalServiceError('groq', 'Translation produced empty output');
       }
 
       return translation;
@@ -51,7 +65,7 @@ export class OpenAiTranslator implements Translator {
         'Translation request failed',
       );
       throw new ExternalServiceError(
-        'openai',
+        'groq',
         'Failed to translate the answer',
         err instanceof Error ? err.message : undefined,
       );

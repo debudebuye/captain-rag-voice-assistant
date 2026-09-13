@@ -39,14 +39,16 @@ latency, and the models/voice used.
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) (or a local
   PostgreSQL 15+ with the `pgvector` extension)
-- An [OpenAI API key](https://platform.openai.com/api-keys)
+- A free [Groq API key](https://console.groq.com) (LLM + translation)
+- A [Cloudflare API token](https://dash.cloudflare.com) with Workers AI permission (embeddings)
+- Python 3 + `edge-tts` for free TTS: `pip install edge-tts`
 - Node.js 18+ for local development
 
 ### 1. Configure
 
 ```bash
 cp .env.example .env
-# Paste your key into OPENAI_API_KEY=...
+# Paste your keys into GROQ_API_KEY=..., CLOUDFLARE_API_TOKEN=... and CLOUDFLARE_ACCOUNT_ID=...
 ```
 
 ### 2. Start the database and the API
@@ -95,8 +97,8 @@ The response includes:
   "audioUrl": "/audio/እሳት-ነው-1f3a9b2c.mp3",
   "metadata": {
     "latencyMs": 5213,
-    "models": { "embedding": "text-embedding-3-small", "llm": "gpt-4o-mini",
-                "translation": "gpt-4o-mini", "tts": "tts-1", "voice": "onyx" },
+    "models": { "embedding": "@cf/baai/bge-m3", "llm": "qwen/qwen3.8-27b",
+                "translation": "qwen/qwen3.8-27b", "tts": "edge-tts", "voice": "am-ET-AmehaNeural" },
     "chunkCount": 4,
     "retrievalTimeMs": 180, "generationTimeMs": 950,
     "translationTimeMs": 900, "ttsTimeMs": 3100
@@ -111,6 +113,17 @@ curl -o answer.mp3 http://localhost:3000/audio/<filename>.mp3
 # or open http://localhost:3000/audio/<filename>.mp3 in a browser
 ```
 
+### Web UI
+
+The project ships a simple browser UI (vanilla HTML/CSS/JS, no build step). Open
+[`http://localhost:3000`](http://localhost:3000) and you can:
+
+1. Type a command / query in the text box.
+2. Pick an output language (default Amharic).
+3. Hit **Ask the Captain** — the page shows the grounded answer, the translated text,
+   an audio player for the synthesized voice response, the retrieved source chunks with
+   similarity scores, and a per-stage pipeline trace.
+
 ### Health check
 
 ```bash
@@ -120,7 +133,7 @@ curl http://localhost:3000/api/health
 ## Running Locally Without Docker
 
 ```bash
-cp .env.example .env        # set OPENAI_API_KEY and DATABASE_URL
+cp .env.example .env        # set GROQ_API_KEY, CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID and DATABASE_URL
 npm install
 npm run dev                 # tsx watch, TypeScript running directly
 ```
@@ -157,6 +170,8 @@ src/
 ├── middleware/         # centralized error handler
 ├── shared/             # logger, typed errors, DB pool, shared types
 └── config/             # zod-validated environment configuration
+
+public/                 # web UI (index.html, style.css, app.js) served at /
 ```
 
 ### Why these choices
@@ -165,10 +180,10 @@ src/
 |---|---|
 | **Node.js + TypeScript** | Team strength; strict mode catches bugs; honest and productive |
 | **PostgreSQL + pgvector** | Mature, single database for structured + vector data; HNSW index is production-ready |
-| **OpenAI for everything** | One API key, one billing surface, strong Amharic support in LLM + TTS |
 | **Paragraph-based chunking** | Preserves semantic boundaries and sections; simple to reason about |
-| **LLM-based translation** | `gpt-4o-mini` handles Amharic well; avoids adding a second vendor |
-| **OpenAI TTS (onyx)** | Multilingual model that reads Amharic; low latency; consistent Captain voice |
+| **Groq for LLM + translation** | Free tier, fast Llama models, strong multilingual output |
+| **Cloudflare for embeddings** | Workers AI `bge-m3` is multilingual (100+ languages) and free-tier friendly |
+| **edge-tts for speech** | Free, no key; consistent male voice per language. *Not a voice clone* — see Limitations |
 | **Zod validation** | Runtime-safe request parsing + typed config |
 | **Pino logging** | Structured JSON logs, cheap, pipeline-friendly |
 
@@ -176,7 +191,7 @@ src/
 
 1. **Chunk** each document into coherent paragraph-groups (target `CHUNK_SIZE=500`
    tokens, `CHUNK_OVERLAP=50`).
-2. **Embed** every chunk with `text-embedding-3-small` (1536-dim).
+2. **Embed** every chunk with `@cf/baai/bge-m3` (1024-dim) via Cloudflare Workers AI.
 3. **Store** vectors in PostgreSQL with an HNSW index on cosine distance.
 4. **At query time**, embed the question and fetch the top-`k` chunks with
    `ORDER BY embedding <=> $1`, filtered by a similarity threshold.
@@ -196,19 +211,22 @@ src/
 
 | Variable | Default | Description |
 |---|---|---|
-| `OPENAI_API_KEY` | *(required)* | OpenAI API key |
+| `GROQ_API_KEY` | *(required)* | Groq API key (LLM + translation) |
+| `CLOUDFLARE_API_TOKEN` | *(required)* | Cloudflare API token with Workers AI permission (embeddings) |
+| `CLOUDFLARE_ACCOUNT_ID` | *(required)* | Cloudflare account ID (embeddings) |
+| `GROQ_BASE_URL` | `https://api.groq.com/openai/v1` | OpenAI-compatible base URL |
 | `DATABASE_URL` | `postgresql://captain:captain@localhost:5432/captain_rag` | PostgreSQL connection |
 | `PORT` | `3000` | API port |
-| `EMBEDDING_MODEL` | `text-embedding-3-small` | Embedding model |
-| `LLM_MODEL` | `gpt-4o-mini` | Answer generation model |
-| `TRANSLATION_MODEL` | `gpt-4o-mini` | Translation model |
-| `TTS_MODEL` | `tts-1` | TTS model |
-| `TTS_VOICE` | `onyx` | Captain voice (`alloy, echo, fable, onyx, nova, shimmer`) |
+| `EMBEDDING_MODEL` | `@cf/baai/bge-m3` | Embedding model (1024-dim, multilingual) |
+| `LLM_MODEL` | `qwen/qwen3.8-27b` | Answer generation model |
+| `TRANSLATION_MODEL` | `qwen/qwen3.8-27b` | Translation model |
+| `TTS_MODEL` | `edge-tts` | TTS engine |
+| `TTS_VOICE` | `am-ET-AmehaNeural` | Default voice; supported target languages auto-select a native male voice |
 | `TOP_K` | `5` | Chunks retrieved per query |
 | `CHUNK_SIZE` | `500` | Target tokens per chunk |
 | `CHUNK_OVERLAP` | `50` | Overlap tokens between chunks |
 | `SIMILARITY_THRESHOLD` | `0.35` | Minimum cosine similarity to count a chunk as relevant |
-| `VECTOR_DIMENSIONS` | `1536` | Must match the embedding model (`text-embedding-3-small` = 1536) |
+| `VECTOR_DIMENSIONS` | `1024` | Must match the embedding model (`@cf/baai/bge-m3` = 1024) |
 | `AUDIO_DIR` | `./audio` | Where generated audio files are stored |
 
 ## Demo Scenario (2–5 minutes)
@@ -219,17 +237,23 @@ fallback, and the audio playback.
 
 ## Limitations
 
-- **Latency**: three sequential OpenAI calls (generate → translate → TTS) add ~5–8 s per
-  request. In production, translate+TTS could stream or be parallelized.
-- **Amharic TTS quality**: OpenAI TTS supports Amharic but voice quality is still
-  evolving; a dedicated Amharic TTS vendor may be better in production.
+- **Latency**: three sequential service calls (generate → translate → TTS) add a few
+  seconds per request. In production, translate+TTS could stream or be parallelized.
+- **Amharic TTS quality**: edge-tts's single Amharic voice (`am-ET-AmehaNeural`) is decent
+  but a dedicated Amharic TTS vendor may be better in production.
+- **Voice is not a clone**: the "Captain voice" is a fixed Microsoft neural voice profile
+  per language (`am-ET-AmehaNeural`, `en-US-ChristopherNeural`, etc.), not a clone of a real
+  person's voice. This is the tradeoff for a free, keyless, multilingual TTS. True voice
+  cloning (e.g., ElevenLabs, Azure Custom Neural Voice) would fix a Captain's own
+  recording as the profile for every language but costs money and still needs a licensed
+  voice model.
 - **Token heuristic**: chunk sizing uses a characters-per-token approximation. A real
   tokenizer (tiktoken) would be exact.
 - **Local file audio store**: fine for a demo; a production system would use object
   storage (S3) with CDN.
 - **No auth / rate limiting**: intentionally out of scope for this assignment.
-- **Single-vendor dependency**: everything depends on OpenAI; switching would require
-  adapters (the interfaces already make this straightforward).
+- **Free-tier limits**: Groq and Cloudflare Workers AI free tiers have rate limits; heavy
+  load needs quotas or a paid plan.
 
 ## Improvements for Production
 
@@ -239,6 +263,8 @@ fallback, and the audio playback.
 - Evaluation harness with a labeled Q&A set to tune `TOP_K`, threshold, and chunk size.
 - Multi-tenancy and per-language indexes.
 - Object storage + CDN for audio, deduplication by content hash.
+- Voice cloning (ElevenLabs / Azure Custom Neural Voice) to lock the Captain's real voice
+  as the profile across all output languages.
 - Metrics/tracing (OpenTelemetry) and an audit store for the trace.
 
 ## Security Notes

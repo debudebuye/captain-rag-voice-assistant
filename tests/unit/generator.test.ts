@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { OpenAiLlm } from '../../src/modules/llm/generator';
+import { GroqLlm } from '../../src/modules/llm/generator';
 import { buildSystemPrompt, formatContext, buildUserPrompt } from '../../src/modules/llm/prompt';
 import { ExternalServiceError } from '../../src/shared/errors';
 
@@ -46,10 +46,10 @@ describe('prompts', () => {
   });
 });
 
-describe('OpenAiLlm', () => {
+describe('GroqLlm', () => {
   it('detects a grounded answer and returns usedContext=true', async () => {
     const client = fakeClient();
-    const llm = new OpenAiLlm(client as never);
+    const llm = new GroqLlm(client as never);
     vi.mocked(client.chat.completions.create).mockResolvedValue(respondWith('Sound the alarm.') as never);
 
     const result = await llm.generateGroundedAnswer('Fire?', 'Fire procedure context.');
@@ -59,7 +59,7 @@ describe('OpenAiLlm', () => {
 
   it('detects the no-info fallback and returns usedContext=false', async () => {
     const client = fakeClient();
-    const llm = new OpenAiLlm(client as never);
+    const llm = new GroqLlm(client as never);
     const fallback = 'I do not have enough information in the knowledge base to answer that question.';
     vi.mocked(client.chat.completions.create).mockResolvedValue(respondWith(fallback) as never);
 
@@ -70,7 +70,7 @@ describe('OpenAiLlm', () => {
 
   it('throws ExternalServiceError when the API call fails', async () => {
     const client = fakeClient();
-    const llm = new OpenAiLlm(client as never);
+    const llm = new GroqLlm(client as never);
     vi.mocked(client.chat.completions.create).mockRejectedValue(new Error('boom') as never);
 
     await expect(llm.generateGroundedAnswer('Q', 'C')).rejects.toBeInstanceOf(ExternalServiceError);

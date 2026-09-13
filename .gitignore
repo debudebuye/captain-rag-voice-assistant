@@ -1,6 +1,9 @@
 # dependencies
 node_modules/
 
+#scripts
+docs/demo.md
+
 # build output
 dist/
 coverage/

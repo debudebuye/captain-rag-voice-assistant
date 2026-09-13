@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import { AppError } from '../shared/errors';
+import { AppError, ValidationError } from '../shared/errors';
 import { logger } from '../shared/logger';
 
 export function notFoundHandler(req: Request, res: Response): void {
@@ -18,12 +18,20 @@ export function errorHandler(
   _next: NextFunction,
 ): void {
   if (err instanceof AppError) {
+    if (err.details !== undefined) {
+      logger.debug({ code: err.code, path: req.originalUrl, details: err.details }, err.message);
+    }
     logger.warn({ code: err.code, path: req.originalUrl }, err.message);
+
+    // Only structured validation issues are safe to surface to the client.
+    // Raw upstream error messages stay server-side.
+    const safeDetails = err instanceof ValidationError ? err.details : undefined;
+
     res.status(err.statusCode).json({
       error: {
         code: err.code,
         message: err.message,
-        ...(err.details !== undefined ? { details: err.details } : {}),
+        ...(safeDetails !== undefined ? { details: safeDetails } : {}),
       },
     });
     return;

@@ -24,7 +24,7 @@ describe('vectorStore', () => {
     const sql = mockPool.query.mock.calls[0][0] as string;
     expect(sql).toContain('CREATE EXTENSION IF NOT EXISTS vector');
     expect(sql).toContain('CREATE TABLE IF NOT EXISTS chunks');
-    expect(sql).toContain('embedding vector(1536)');
+    expect(sql).toContain('embedding vector(1024)');
     expect(sql).toContain('hnsw (embedding vector_cosine_ops)');
   });
 

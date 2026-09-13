@@ -2,17 +2,20 @@ import 'dotenv/config';
 import { z } from 'zod';
 
 const envSchema = z.object({
-  OPENAI_API_KEY: z.string().min(1, 'OPENAI_API_KEY is required'),
-  EMBEDDING_MODEL: z.string().default('text-embedding-3-small'),
-  LLM_MODEL: z.string().default('gpt-4o-mini'),
-  TRANSLATION_MODEL: z.string().default('gpt-4o-mini'),
-  TTS_MODEL: z.string().default('tts-1'),
-  TTS_VOICE: z.string().default('onyx'),
+  GROQ_API_KEY: z.string().min(1, 'GROQ_API_KEY is required'),
+  CLOUDFLARE_API_TOKEN: z.string().min(1, 'CLOUDFLARE_API_TOKEN is required'),
+  CLOUDFLARE_ACCOUNT_ID: z.string().min(1, 'CLOUDFLARE_ACCOUNT_ID is required'),
+  GROQ_BASE_URL: z.string().url().default('https://api.groq.com/openai/v1'),
+  EMBEDDING_MODEL: z.string().default('@cf/baai/bge-m3'),
+  LLM_MODEL: z.string().default('qwen/qwen3.8-27b'),
+  TRANSLATION_MODEL: z.string().default('qwen/qwen3.8-27b'),
+  TTS_MODEL: z.string().default('edge-tts'),
+  TTS_VOICE: z.string().default('am-ET-AmehaNeural'),
   DATABASE_URL: z
     .string()
     .min(1, 'DATABASE_URL is required')
     .default('postgresql://captain:captain@localhost:5432/captain_rag'),
-  VECTOR_DIMENSIONS: z.coerce.number().int().positive().default(1536),
+  VECTOR_DIMENSIONS: z.coerce.number().int().positive().default(1024),
   PORT: z.coerce.number().int().positive().default(3000),
   HOST: z.string().default('0.0.0.0'),
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),

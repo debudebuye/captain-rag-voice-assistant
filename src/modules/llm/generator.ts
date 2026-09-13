@@ -12,10 +12,10 @@ export interface LlmClient {
   generateGroundedAnswer(query: string, context: string): Promise<GenerationResult>;
 }
 
-export class OpenAiLlm implements LlmClient {
+export class GroqLlm implements LlmClient {
   private readonly client: OpenAI;
 
-  constructor(client = new OpenAI({ apiKey: env.OPENAI_API_KEY })) {
+  constructor(client = new OpenAI({ apiKey: env.GROQ_API_KEY, baseURL: env.GROQ_BASE_URL })) {
     this.client = client;
   }
 
@@ -39,7 +39,7 @@ export class OpenAiLlm implements LlmClient {
       return { text, usedContext };
     } catch (err) {
       throw new ExternalServiceError(
-        'openai',
+        'groq',
         'Failed to generate a grounded answer',
         err instanceof Error ? err.message : undefined,
       );

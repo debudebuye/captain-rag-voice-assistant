@@ -47,7 +47,7 @@
   </g>
 
   <text x="60" y="282" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#7fa3bd">
-    Node.js + TypeScript  •  PostgreSQL + pgvector  •  OpenAI (embeddings · LLM · translation · TTS)  •  Knowledge base: 10 maritime documents
+    Node.js + TypeScript  •  PostgreSQL + pgvector  •  Cloudflare (embeddings) + Groq (LLM · translation) + edge-tts (TTS)  •  Knowledge base: 10 maritime documents
   </text>
   <text x="60" y="308" font-family="Segoe UI, Arial, sans-serif" font-size="14" fill="#4c6f8f">
     Sample demo project — knowledge-base content is fictional and not operational maritime guidance.

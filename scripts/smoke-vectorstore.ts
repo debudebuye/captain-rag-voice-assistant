@@ -11,7 +11,7 @@ async function main(): Promise<void> {
   const chunks = chunkDocuments(docs, { chunkSize: 500, chunkOverlap: 50 });
   logger.info({ docs: docs.length, chunks: chunks.length }, 'chunked');
 
-  const zeroVec = (padding: number): number[] => new Array(1536).fill(0).map(() => Math.random());
+  const zeroVec = (padding: number): number[] => new Array(1024).fill(0).map(() => Math.random());
   await insertChunks(chunks.map((c, i) => ({ ...c, embedding: zeroVec(i) })));
 
   logger.info({ count: await countChunks() }, 'inserted');

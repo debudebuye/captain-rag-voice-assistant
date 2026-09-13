@@ -22,11 +22,11 @@ flowchart LR
         KB[(chunks table + HNSW index)]
     end
 
-    subgraph OpenAI[OpenAI API]
-        EM[text-embedding-3-small]
-        LLM[gpt-4o-mini generate]
-        TRA[gpt-4o-mini translate]
-        TTSA[tts-1 voice: onyx]
+    subgraph FreeApis[Free-tier services]
+        EM[Cloudflare Workers AI embeddings]
+        LLM[Groq qwen3.8-27b generate]
+        TRA[Groq qwen3.8-27b translate]
+        TTSA[edge-tts local (am voice)]
     end
 
     C --> R
@@ -52,7 +52,7 @@ flowchart LR
 |---|---|---|---|
 | Load | `knowledge-base/*.md` | `KBDocument[]` | 10 documents |
 | Chunk | documents | `DocumentChunk[]` | ~20 chunks, `id`, `document`, `chunkIndex`, `content` |
-| Embed | chunk content | `number[][]` | 1536-dim vectors |
+| Embed | chunk content | `number[][]` | 1024-dim vectors |
 | Index | chunks + vectors | pgvector rows | `chunks` table, HNSW cosine index |
 | Retrieve | question text | `RetrievalResult[]` | top-k with `document`, `content`, `score` |
 | Generate | question + context | grounded text | answer + `usedContext` flag |
@@ -70,7 +70,7 @@ captain-rag-voice-assistant/
 │   │   ├── rag/
 │   │   │   ├── loader.ts              # read .md files
 │   │   │   ├── chunker.ts             # paragraph chunker + token estimate
-│   │   │   ├── embeddings.ts          # OpenAI embeddings client
+│   │   │   ├── embeddings.ts          # Cloudflare Workers AI embeddings client
 │   │   │   ├── vectorStore.ts         # pgvector schema + search
 │   │   │   └── index.ts               # RAG orchestrator (index/retrieve)
 │   │   ├── llm/

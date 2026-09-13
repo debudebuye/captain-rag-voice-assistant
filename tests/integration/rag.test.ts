@@ -10,7 +10,7 @@ import {
   searchChunks,
 } from '../../src/modules/rag/vectorStore';
 
-const DIM = 1536;
+const DIM = 1024;
 
 /**
  * Deterministic character-3-gram embedding with stopword filtering. Shared

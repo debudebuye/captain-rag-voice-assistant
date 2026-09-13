@@ -3,6 +3,7 @@ import type { LlmClient } from '../llm/generator';
 import { formatContext } from '../llm/prompt';
 import type { Translator } from '../translation/translator';
 import type { TtsClient } from '../tts/synthesizer';
+import { resolveVoice } from '../tts/synthesizer';
 import type { PipelineResult, SourceReference } from '../../shared/types';
 import { logger } from '../../shared/logger';
 import { env } from '../../config/env';
@@ -55,7 +56,7 @@ export async function runPipeline(
   );
 
   const { result: tts, elapsedMs: ttsTimeMs } = await measure(() =>
-    deps.tts.synthesize(translated),
+    deps.tts.synthesize(translated, targetLanguage),
   );
 
   const totalLatencyMs = Math.round(performance.now() - pipelineStart);
@@ -92,7 +93,7 @@ export async function runPipeline(
         llm: env.LLM_MODEL,
         translation: env.TRANSLATION_MODEL,
         tts: env.TTS_MODEL,
-        voice: env.TTS_VOICE,
+        voice: resolveVoice(targetLanguage),
       },
       chunkCount: retrieved.length,
       retrievalTimeMs,

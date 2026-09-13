@@ -1,4 +1,5 @@
 import express from 'express';
+import path from 'node:path';
 import type { Express, Request, Response, NextFunction } from 'express';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import { healthRouter } from './routes/health.routes';
@@ -23,6 +24,8 @@ function requestLogger(req: Request, res: Response, next: NextFunction): void {
   next();
 }
 
+const PUBLIC_DIR = path.resolve(__dirname, '../public');
+
 export function createApp(): Express {
   const app = express();
 
@@ -32,6 +35,7 @@ export function createApp(): Express {
 
   fs.mkdirSync(env.AUDIO_DIR, { recursive: true });
   app.use(env.AUDIO_BASE_URL, express.static(env.AUDIO_DIR));
+  app.use(express.static(PUBLIC_DIR));
 
   app.use('/api', healthRouter);
   app.use('/api/assistant', assistantRouter);

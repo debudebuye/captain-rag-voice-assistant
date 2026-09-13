@@ -235,6 +235,8 @@ See [docs/demo.md](docs/demo.md) for a step-by-step demo script with prepared pr
 covering: a correct grounded answer, an answer with sources, the unknown-question safety
 fallback, and the audio playback.
 
+For demo feedback or questions, contact: **debadeba015@gmail.com**
+
 ## Limitations
 
 - **Latency**: three sequential service calls (generate → translate → TTS) add a few
